@@ -1,0 +1,64 @@
+- name: Get database pods
+  k8s_info:
+    namespace: default
+    kind: Pod
+    label_selectors:
+      - app=mysql
+  register: pod_list
+
+- name: Create a Deployment object for Ghost app
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Deployment
+      metadata:
+        name: ghost-deployment
+        namespace: default
+        labels:
+          app: ghost
+          tier: app
+      spec:
+        selector:
+          matchLabels:
+            app: ghost
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels: 
+              app: ghost
+              tier: app
+          spec:
+            containers:
+            - name: ghost
+              image: ghost:5.14.1
+              env:
+              - name: NODE_EN
+                value: production
+              - name: url
+                value: http://{{ ghost_ip }}:{{ ghost_port }}/
+              - name: database__connection__host
+                value: mysql-service
+              - name: database__connection__user
+                value: "ghostuser"
+              - name: database__connection__password
+                value: "ghostpass"
+              - name: database__connection__database
+                value: "ghostdb"
+              - name:  mail__transport
+                value: SMTP
+              - name: mail__options__secure
+                value: "false"
+              - name: mail__options__service
+                value: "Mailtrap"
+              - name: mail__options__host
+                value: "smtp.mailtrap.io"
+              - name: mail__options__port
+                value: "587"
+              - name: mail__options__auth__user
+                value: "6657010549dfd1"
+              - name: mail__options__auth__pass
+                value: "b5d62231f03727"              
+              ports:
+              - containerPort: 2368
