@@ -33,3 +33,64 @@
         ports:
           - targetPort: 3306 
             port: 3306
+  
+
+
+- name: Create a Deployment object for MySQL database
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Deployment
+      metadata:
+        name: mysql-deployment
+        namespace: default
+        labels:
+          app: mysql
+          tier: database
+      spec:
+        selector:
+          matchLabels:
+            app: mysql
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels: 
+              app: mysql
+              tier: database
+          spec:
+            containers:
+            - name: mysql
+              image: mysql:latest
+              env: # The variables below could be set on a ConfigMap object
+              - name: MYSQL_ALLOW_EMPTY_PASSWORD
+                value: "true"
+              - name: MYSQL_DATABASE
+                value: ghostdb
+              - name: MYSQL_USER
+                value: ghostuser
+              - name: MYSQL_PASSWORD
+                value: "ghostpass" # Use Secret object in real usage
+              - name: BD_POD_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
+              - name: BD_POD_IP
+                valueFrom:
+                  fieldRef:
+                    fieldPath: status.podIP
+              ports:
+              - containerPort: 3306
+              volumeMounts:
+              - name: mysql-persistent-storage
+                mountPath: /var/lib/mysql
+            volumes:
+            - name: mysql-persistent-storage
+              persistentVolumeClaim:
+                claimName: mysql-pv-claim
+    wait: yes
+    wait_condition:
+      type: Progressing
+      status: True
+      reason: NewReplicaSetAvailable
