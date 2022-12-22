@@ -1,0 +1,36 @@
+- name: Undeploy the PVC for MySQL
+  kubernetes.core.k8s:
+    state: absent
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: mysql-pv-claim
+        namespace: default
+
+
+- name: Create a Deployment object for MySQL database
+  kubernetes.core.k8s:
+    state: absent
+    definition:
+      apiVersion: v1
+      kind: Deployment
+      metadata:
+        name: mysql-deployment
+        namespace: default
+        labels:
+          app: mysql
+          tier: database
+
+- name: Create a Service for MySQL
+  kubernetes.core.k8s:
+    state: absent
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: mysql-service
+        namespace: default
+        labels:
+          app: mysql
+          tier: database
