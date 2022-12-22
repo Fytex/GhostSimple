@@ -1,0 +1,17 @@
+- name: Change ip address in jmeter config
+  lineinfile: 
+    path: 1threadtest.jmx
+    regexp: '^(\s*\<stringProp name="HTTPSampler\.domain"\>).*(\<\/stringProp\>)' 
+    line: '\g<1>{{ghost_ip}}\g<2>'
+    backrefs: yes
+
+- name: Change number of threads
+  lineinfile: 
+    path: 1threadtest.jmx
+    regexp: '^(\s*\<stringProp name="ThreadGroup\.num_threads"\>).*(\<\/stringProp\>)' 
+    line: '\g<1>{{ num_threads }}\g<2>'
+    backrefs: yes
+  when: "num_threads is defined" 
+
+- name: Execute jmeter
+  shell: "nohup jmeter -n -t 1threadtest.jmx &>/dev/null &"
