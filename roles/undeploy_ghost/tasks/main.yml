@@ -24,3 +24,6 @@
         labels:
           app: ghost
           tier: app
+    wait: yes
+    wait_sleep: 10
+    wait_timeout: 360

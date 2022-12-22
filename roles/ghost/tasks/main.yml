@@ -62,6 +62,12 @@
                 value: "b5d62231f03727"              
               ports:
               - containerPort: 2368
+    wait: yes
+    wait_condition:
+      type: Progressing
+      status: True
+      reason: NewReplicaSetAvailable
+
 
 - name: Create a Service for Ghost
   kubernetes.core.k8s:
@@ -82,14 +88,9 @@
         ports:
           - port: 30007
             targetPort: 2368
-
-  
-- name: Create a blog administrator in the database
-  kubernetes.core.k8s_exec:
-    namespace: default
-    pod: "{{ pod_list.resources[0].metadata.name | regex_replace('[\"]') }}"
-    command: "mysql -u ghostuser -pghostpass -D ghostdb -e \"update users set name='ascn', password='{{ password_user }}', email='ascn@example.com', status='active' where id=1\";"
-
+    wait: yes
+    wait_sleep: 10
+    wait_timeout: 360
 
 - name: Get an existing Service object
   kubernetes.core.k8s_info:
@@ -111,3 +112,9 @@
     regexp: '^(\s*ghost_ip:)' 
     line: '\1 {{ ghost_service.resources[0].status.loadBalancer.ingress[0].ip }}'
     backrefs: yes
+
+- name: Create a blog administrator in the database
+  kubernetes.core.k8s_exec:
+    namespace: default
+    pod: "{{ pod_list.resources[0].metadata.name | regex_replace('[\"]') }}"
+    command: "mysql -u ghostuser -pghostpass -D ghostdb -e \"update users set name='ascn', password='{{ password_user }}', email='ascn@example.com', status='active' where id=1\";"
