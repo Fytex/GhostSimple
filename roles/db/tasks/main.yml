@@ -14,6 +14,7 @@
           requests:
             storage: 20Gi
 
+
 - name: Create a Service for MySQL
   kubernetes.core.k8s:
     state: present
@@ -33,7 +34,6 @@
         ports:
           - targetPort: 3306 
             port: 3306
-  
 
 
 - name: Create a Deployment object for MySQL database

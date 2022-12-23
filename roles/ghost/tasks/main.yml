@@ -6,6 +6,7 @@
       - app=mysql
   register: pod_list
 
+
 - name: Create a Deployment object for Ghost app
   kubernetes.core.k8s:
     state: present
@@ -92,6 +93,7 @@
     wait_sleep: 10
     wait_timeout: 360
 
+
 - name: Get an existing Service object
   kubernetes.core.k8s_info:
     api_version: v1
@@ -103,8 +105,10 @@
   delay: 15
   retries: 3
 
+
 - debug: 
     msg: "{{ ghost_service.resources[0].status.loadBalancer.ingress[0].ip }}"
+
 
 - name: replace line
   lineinfile: 
@@ -112,6 +116,7 @@
     regexp: '^(\s*ghost_ip:)' 
     line: '\1 {{ ghost_service.resources[0].status.loadBalancer.ingress[0].ip }}'
     backrefs: yes
+
 
 - name: Create a blog administrator in the database
   kubernetes.core.k8s_exec:

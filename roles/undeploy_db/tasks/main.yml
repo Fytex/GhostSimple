@@ -9,7 +9,7 @@
         namespace: default
 
 
-- name: Create a Deployment object for MySQL database
+- name: Undeploy the object for MySQL database
   kubernetes.core.k8s:
     state: absent
     definition:
@@ -22,7 +22,8 @@
           app: mysql
           tier: database
 
-- name: Create a Service for MySQL
+
+- name: Undeploy the Service for MySQL
   kubernetes.core.k8s:
     state: absent
     definition:

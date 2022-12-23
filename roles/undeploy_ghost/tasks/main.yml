@@ -1,4 +1,4 @@
-- name: Undeploy the Deployment ghost object
+- name: Undeploy the object for Ghost
   kubernetes.core.k8s:
     state: absent
     definition:
