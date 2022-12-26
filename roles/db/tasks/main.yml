@@ -89,8 +89,8 @@
             - name: mysql-persistent-storage
               persistentVolumeClaim:
                 claimName: mysql-pv-claim
-    wait: yes
-    wait_condition:
-      type: Progressing
-      status: True
-      reason: NewReplicaSetAvailable
+
+
+- name: Wait for sql pods become ready
+  shell: "kubectl wait --namespace=default --for=condition=ContainersReady pods -l app=mysql,tier=database --timeout=600s"
+  register: control_plane_pods_ready
