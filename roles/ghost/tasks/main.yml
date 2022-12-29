@@ -85,7 +85,7 @@
         selector:
           app: ghost
         ports:
-          - port: 30007
+          - port: 80
             targetPort: 2368
     wait: yes
     wait_sleep: 10
