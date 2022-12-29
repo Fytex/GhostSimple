@@ -16,7 +16,7 @@ all:
 
   # APP variables
   ghost_ip: 34.82.210.194
-  ghost_port: 30007        # Needs to be updated
+  ghost_port: 80      # Needs to be updated
 
 
 
