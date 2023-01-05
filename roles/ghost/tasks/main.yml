@@ -6,7 +6,53 @@
       - app=mysql
   register: pod_list
 
+- name: Create a Service for Ghost
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ghost-service
+        namespace: default
+        labels:
+          app: ghost
+          tier: app
+      spec:
+        type: LoadBalancer
+        selector:
+          app: ghost
+        ports:
+          - port: 80
+            targetPort: 2368
+    wait: yes
+    wait_sleep: 10
+    wait_timeout: 360
 
+
+- name: Get an existing Service object
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Service
+    name: ghost-service
+    namespace: default
+  register: ghost_service
+  until: "ghost_service.resources[0].status.loadBalancer.ingress is defined"
+  delay: 25
+  retries: 3
+
+
+- debug: 
+    msg: "{{ ghost_service.resources[0].status.loadBalancer.ingress[0].ip }}"
+
+
+- name: replace line
+  lineinfile: 
+    path: inventory/gcp.yml
+    regexp: '^(\s*ghost_ip:)' 
+    line: '\1 {{ ghost_service.resources[0].status.loadBalancer.ingress[0].ip }}'
+    backrefs: yes
+ 
 - name: Create a Deployment object for Ghost app
   kubernetes.core.k8s:
     state: present
@@ -67,53 +113,6 @@
 - name: Wait for ghost pods become ready
   shell: "kubectl wait --namespace=default --for=condition=ContainersReady pods -l app=ghost,tier=app --timeout=600s"
   register: control_plane_pods_ready
-
-- name: Create a Service for Ghost
-  kubernetes.core.k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Service
-      metadata:
-        name: ghost-service
-        namespace: default
-        labels:
-          app: ghost
-          tier: app
-      spec:
-        type: LoadBalancer
-        selector:
-          app: ghost
-        ports:
-          - port: 80
-            targetPort: 2368
-    wait: yes
-    wait_sleep: 10
-    wait_timeout: 360
-
-
-- name: Get an existing Service object
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Service
-    name: ghost-service
-    namespace: default
-  register: ghost_service
-  until: "ghost_service.resources[0].status.loadBalancer.ingress is defined"
-  delay: 25
-  retries: 3
-
-
-- debug: 
-    msg: "{{ ghost_service.resources[0].status.loadBalancer.ingress[0].ip }}"
-
-
-- name: replace line
-  lineinfile: 
-    path: inventory/gcp.yml
-    regexp: '^(\s*ghost_ip:)' 
-    line: '\1 {{ ghost_service.resources[0].status.loadBalancer.ingress[0].ip }}'
-    backrefs: yes
 
 
 - name: Create a blog administrator in the database
