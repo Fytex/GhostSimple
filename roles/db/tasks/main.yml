@@ -92,5 +92,5 @@
 
 
 - name: Wait for sql pods become ready
-  shell: "kubectl wait --namespace=default --for=condition=ContainersReady pods -l app=mysql,tier=database --timeout=600s"
+  shell: "kubectl wait --namespace=default --for=condition=Ready pods -l app=mysql,tier=database --timeout=600s"
   register: control_plane_pods_ready

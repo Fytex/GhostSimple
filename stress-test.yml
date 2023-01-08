@@ -2,4 +2,6 @@
   hosts: localhost
   gather_facts: true
   roles:
-    - { role: first_test }
+    - { role: first_test, tags: 'simple' }
+    - { role: complete_test, tags: 'complete'}
+    - { role: access_test, tags: 'access'}
